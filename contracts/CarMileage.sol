@@ -4,15 +4,17 @@ pragma solidity ^0.8.0;
 contract CarMileage {
     address public contractOwner;
 
+    enum Make { Unknown, Toyota, Honda, Ford, BMW }
+    enum Model { Unknown, Corolla, Civic, Mustang, X5 }
+
     struct CarConstantData {
-        string vin;
-        string make;
-        string model;
-        uint16 year;
+        uint256 vin; // VIN as uint256
+        Make make;   // Make as enum
+        Model model; // Model as enum
+        uint16 year; // Year remains as uint16
     }
 
     struct CarMutableData {
-        string currentOwnerName;
         uint256 mileage;
         ServiceRecord[] serviceHistory;
         OwnershipRecord[] ownershipHistory;
@@ -20,22 +22,20 @@ contract CarMileage {
 
     struct ServiceRecord {
         uint256 mileage;
-        string serviceDetails;
-        uint256 timestamp;
+        uint256 timestamp; // Use uint256 for consistency
     }
 
     struct OwnershipRecord {
         string ownerName;
-        uint256 timestamp;
+        uint256 timestamp; // Use uint256 for consistency
     }
 
     mapping(bytes32 => CarConstantData) public carConstantData;
     mapping(bytes32 => CarMutableData) public carMutableData;
-    bytes32[] public registeredCars;
 
-    event CarRegistered(bytes32 indexed carId, string vin, string initialOwner);
+    event CarRegistered(bytes32 indexed carId, uint256 vin, Make make, Model model, uint16 year, string initialOwner);
     event MileageUpdated(bytes32 indexed carId, uint256 mileage);
-    event OwnershipTransferred(bytes32 indexed carId, string previousOwner, string newOwner);
+    event OwnershipTransferred(bytes32 indexed carId, string newOwner);
 
     constructor() {
         contractOwner = msg.sender;
@@ -48,14 +48,14 @@ contract CarMileage {
 
     function registerCar(
         bytes32 carId,
-        string memory vin,
-        string memory make,
-        string memory model,
+        uint256 vin,
+        Make make,
+        Model model,
         uint16 year,
         string memory initialOwner
     ) public onlyContractOwner {
-        require(bytes(carConstantData[carId].vin).length == 0, "Car already registered");
-        
+        require(carConstantData[carId].vin == 0, "Car already registered");
+
         carConstantData[carId] = CarConstantData({
             vin: vin,
             make: make,
@@ -63,63 +63,52 @@ contract CarMileage {
             year: year
         });
 
-        carMutableData[carId].currentOwnerName = initialOwner;
         carMutableData[carId].mileage = 0;
         carMutableData[carId].ownershipHistory.push(OwnershipRecord({
             ownerName: initialOwner,
             timestamp: block.timestamp
         }));
 
-        registeredCars.push(carId);
-
-        emit CarRegistered(carId, vin, initialOwner);
+        emit CarRegistered(carId, vin, make, model, year, initialOwner);
     }
 
-    function updateMileage(bytes32 carId, uint256 mileage, string memory serviceDetails) public {
-        require(bytes(carConstantData[carId].vin).length > 0, "Car not registered");
+    function updateMileage(bytes32 carId, uint256 mileage) public {
+        require(carConstantData[carId].vin != 0, "Car not registered");
+
         carMutableData[carId].mileage = mileage;
         carMutableData[carId].serviceHistory.push(ServiceRecord({
             mileage: mileage,
-            serviceDetails: serviceDetails,
             timestamp: block.timestamp
         }));
+
         emit MileageUpdated(carId, mileage);
     }
 
     function transferOwnership(bytes32 carId, string memory newOwner) public {
-        require(bytes(carConstantData[carId].vin).length > 0, "Car not registered");
-        string memory previousOwner = carMutableData[carId].currentOwnerName;
-        carMutableData[carId].currentOwnerName = newOwner;
+        require(carConstantData[carId].vin != 0, "Car not registered");
+
         carMutableData[carId].ownershipHistory.push(OwnershipRecord({
             ownerName: newOwner,
             timestamp: block.timestamp
         }));
-        emit OwnershipTransferred(carId, previousOwner, newOwner);
+
+        emit OwnershipTransferred(carId, newOwner);
     }
 
     function getCarDetails(bytes32 carId) public view returns (
         CarConstantData memory constantData,
-        string memory currentOwner,
         uint256 mileage,
         ServiceRecord[] memory serviceHistory,
         OwnershipRecord[] memory ownershipHistory
     ) {
-        require(bytes(carConstantData[carId].vin).length > 0, "Car not registered");
+        require(carConstantData[carId].vin != 0, "Car not registered");
+
         constantData = carConstantData[carId];
         CarMutableData storage mutableData = carMutableData[carId];
-        return (constantData, mutableData.currentOwnerName, mutableData.mileage, mutableData.serviceHistory, mutableData.ownershipHistory);
-    }
-
-    function findCarIdByVin(string memory vin) public view returns (bytes32) {
-        for (uint i = 0; i < registeredCars.length; i++) {
-            if (keccak256(bytes(carConstantData[registeredCars[i]].vin)) == keccak256(bytes(vin))) {
-                return registeredCars[i];
-            }
-        }
-        revert("Car with given VIN not found");
+        return (constantData, mutableData.mileage, mutableData.serviceHistory, mutableData.ownershipHistory);
     }
 
     function carExists(bytes32 carId) public view returns (bool) {
-        return bytes(carConstantData[carId].vin).length > 0;
+        return carConstantData[carId].vin != 0;
     }
 }
