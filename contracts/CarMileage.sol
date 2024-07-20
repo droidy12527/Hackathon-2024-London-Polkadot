@@ -2,44 +2,113 @@
 pragma solidity ^0.8.0;
 
 contract CarMileage {
+    address public contractOwner;
 
-    struct Car {
-        address owner;
+    enum Make { Unknown, Toyota, Honda, Ford, BMW }
+    enum Model { Unknown, Corolla, Civic, Mustang, X5 }
+
+    struct CarConstantData {
+        uint256 vin; // VIN as uint256
+        Make make;   // Make as enum
+        Model model; // Model as enum
+        uint16 year; // Year remains as uint16
+    }
+
+    struct CarMutableData {
         uint256 mileage;
+        ServiceRecord[] serviceHistory;
+        OwnershipRecord[] ownershipHistory;
     }
 
-    mapping(bytes32 => Car) private cars;
-    mapping(address => bool) private serviceCenters;
-    address private admin;
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can perform this action");
-        _;
+    struct ServiceRecord {
+        uint256 mileage;
+        uint256 timestamp; // Use uint256 for consistency
     }
 
-    modifier onlyServiceCenter() {
-        require(serviceCenters[msg.sender], "Only service centers can perform this action");
-        _;
+    struct OwnershipRecord {
+        string ownerName;
+        uint256 timestamp; // Use uint256 for consistency
     }
 
-    event CarRegistered(bytes32 carId, address owner);
-    event OwnershipTransferred(bytes32 carId, address newOwner);
-    event MileageUpdated(bytes32 carId, uint256 newMileage, string serviceDetails);
-    event ServiceCenterAdded(address serviceCenter);
+    mapping(bytes32 => CarConstantData) public carConstantData;
+    mapping(bytes32 => CarMutableData) public carMutableData;
+
+    event CarRegistered(bytes32 indexed carId, uint256 vin, Make make, Model model, uint16 year, string initialOwner);
+    event MileageUpdated(bytes32 indexed carId, uint256 mileage);
+    event OwnershipTransferred(bytes32 indexed carId, string newOwner);
 
     constructor() {
-        admin = msg.sender;
+        contractOwner = msg.sender;
     }
 
-    function registerCar(bytes32 carId) public {
-        require(cars[carId].owner == address(0), "Car already registered");
+    modifier onlyContractOwner() {
+        require(msg.sender == contractOwner, "Not the contract owner");
+        _;
+    }
 
-        cars[carId] = Car({
-            owner: msg.sender,
-            mileage: 0
+    function registerCar(
+        bytes32 carId,
+        uint256 vin,
+        Make make,
+        Model model,
+        uint16 year,
+        string memory initialOwner
+    ) public onlyContractOwner {
+        require(carConstantData[carId].vin == 0, "Car already registered");
+
+        carConstantData[carId] = CarConstantData({
+            vin: vin,
+            make: make,
+            model: model,
+            year: year
         });
 
-        emit CarRegistered(carId, msg.sender);
+        carMutableData[carId].mileage = 0;
+        carMutableData[carId].ownershipHistory.push(OwnershipRecord({
+            ownerName: initialOwner,
+            timestamp: block.timestamp
+        }));
+
+        emit CarRegistered(carId, vin, make, model, year, initialOwner);
     }
 
+    function updateMileage(bytes32 carId, uint256 mileage) public {
+        require(carConstantData[carId].vin != 0, "Car not registered");
+
+        carMutableData[carId].mileage = mileage;
+        carMutableData[carId].serviceHistory.push(ServiceRecord({
+            mileage: mileage,
+            timestamp: block.timestamp
+        }));
+
+        emit MileageUpdated(carId, mileage);
+    }
+
+    function transferOwnership(bytes32 carId, string memory newOwner) public {
+        require(carConstantData[carId].vin != 0, "Car not registered");
+
+        carMutableData[carId].ownershipHistory.push(OwnershipRecord({
+            ownerName: newOwner,
+            timestamp: block.timestamp
+        }));
+
+        emit OwnershipTransferred(carId, newOwner);
+    }
+
+    function getCarDetails(bytes32 carId) public view returns (
+        CarConstantData memory constantData,
+        uint256 mileage,
+        ServiceRecord[] memory serviceHistory,
+        OwnershipRecord[] memory ownershipHistory
+    ) {
+        require(carConstantData[carId].vin != 0, "Car not registered");
+
+        constantData = carConstantData[carId];
+        CarMutableData storage mutableData = carMutableData[carId];
+        return (constantData, mutableData.mileage, mutableData.serviceHistory, mutableData.ownershipHistory);
+    }
+
+    function carExists(bytes32 carId) public view returns (bool) {
+        return carConstantData[carId].vin != 0;
+    }
 }

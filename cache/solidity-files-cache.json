@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/prathameshmestry/Developer/hackathon/contracts/CarMileage.sol": {
-      "lastModificationDate": 1721482690626,
-      "contentHash": "823655703174b490cabf21382c644ec4",
+      "lastModificationDate": 1721502956372,
+      "contentHash": "da2f1984df15fe9f0a6fda98f403fdbc",
       "sourceName": "contracts/CarMileage.sol",
       "solcConfig": {
         "version": "0.8.0",

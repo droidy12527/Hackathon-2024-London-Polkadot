@@ -1,6 +1,6 @@
 async function main() {
-    const CarMileage = await ethers.getContractFactory("CarMileage");
-    const carMileage = await CarMileage.deploy();
+    const Box = await ethers.getContractFactory("CarMileage");
+    const carMileage = await Box.deploy();
     await carMileage.deployed();
     console.log("CarMileage deployed to:", carMileage.address);
   }
