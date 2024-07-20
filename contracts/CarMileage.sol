@@ -4,13 +4,10 @@ pragma solidity ^0.8.0;
 contract CarMileage {
     address public contractOwner;
 
-    enum Make { Unknown, Toyota, Honda, Ford, BMW }
-    enum Model { Unknown, Corolla, Civic, Mustang, X5 }
-
     struct CarConstantData {
         uint256 vin; // VIN as uint256
-        Make make;   // Make as enum
-        Model model; // Model as enum
+        string make; // Make as string
+        string model; // Model as string
         uint16 year; // Year remains as uint16
     }
 
@@ -23,6 +20,7 @@ contract CarMileage {
     struct ServiceRecord {
         uint256 mileage;
         uint256 timestamp; // Use uint256 for consistency
+        string description; // Added description field
     }
 
     struct OwnershipRecord {
@@ -33,7 +31,7 @@ contract CarMileage {
     mapping(bytes32 => CarConstantData) public carConstantData;
     mapping(bytes32 => CarMutableData) public carMutableData;
 
-    event CarRegistered(bytes32 indexed carId, uint256 vin, Make make, Model model, uint16 year, string initialOwner);
+    event CarRegistered(bytes32 indexed carId, uint256 vin, string make, string model, uint16 year, string initialOwner);
     event MileageUpdated(bytes32 indexed carId, uint256 mileage);
     event OwnershipTransferred(bytes32 indexed carId, string newOwner);
 
@@ -49,8 +47,8 @@ contract CarMileage {
     function registerCar(
         bytes32 carId,
         uint256 vin,
-        Make make,
-        Model model,
+        string memory make,
+        string memory model,
         uint16 year,
         string memory initialOwner
     ) public onlyContractOwner {
@@ -72,13 +70,14 @@ contract CarMileage {
         emit CarRegistered(carId, vin, make, model, year, initialOwner);
     }
 
-    function updateMileage(bytes32 carId, uint256 mileage) public {
+    function updateMileage(bytes32 carId, uint256 mileage, string memory serviceDescription) public {
         require(carConstantData[carId].vin != 0, "Car not registered");
 
         carMutableData[carId].mileage = mileage;
         carMutableData[carId].serviceHistory.push(ServiceRecord({
             mileage: mileage,
-            timestamp: block.timestamp
+            timestamp: block.timestamp,
+            description: serviceDescription // Added description to service record
         }));
 
         emit MileageUpdated(carId, mileage);

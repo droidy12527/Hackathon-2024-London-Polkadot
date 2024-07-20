@@ -2,25 +2,15 @@ const { ethers } = require("hardhat");
 
 async function main() {
     const [deployer] = await ethers.getSigners();
-    const carMileage = await ethers.getContractAt("CarMileage", "0x73126e130F8b8e428C04E9F8f26c4b4E7a130758");
+    const carMileage = await ethers.getContractAt("CarMileage", "0xf0b89C9Abf7308FAEC9DD359Cd4aAc30287d0e9c");
 
-    // Convert the VIN and make/model to the new formats
+    // Car details
     const numberplate = "MMST12sdXY";
     const vin = ethers.BigNumber.from("123456789"); // VIN as uint256
 
-    // Enum values for make and model (assumed values; adjust as per your enum definitions)
-    const Make = {
-        Toyota: 1,
-        Honda: 2,
-        Ford: 3,
-        BMW: 4
-    };
-    const Model = {
-        Corolla: 1,
-        Civic: 2,
-        Mustang: 3,
-        X5: 4
-    };
+    // Use strings for make and model
+    const make = "Toyota";
+    const model = "Corolla";
 
     console.log("Testing CarMileage contract...");
 
@@ -34,8 +24,8 @@ async function main() {
             await carMileage.registerCar(
                 carId,
                 vin,
-                Make.Toyota,   // Enum value for make
-                Model.Corolla, // Enum value for model
+                make,       // Make as string
+                model,      // Model as string
                 2022,
                 "Initial Owner"
             );
@@ -44,11 +34,12 @@ async function main() {
             console.log("Car is already registered.");
         }
 
-        // Update mileage
+        // Update mileage with a description
         console.log("Updating mileage...");
         await carMileage.updateMileage(
             carId,
-            1000
+            1000,
+            "Oil change and tire rotation" // Service description
         );
         console.log("Mileage updated successfully.");
 
@@ -66,8 +57,8 @@ async function main() {
 
         console.log("Car Details:");
         console.log("VIN:", constantData.vin.toString());
-        console.log("Make:", Object.keys(Make).find(key => Make[key] === constantData.make));
-        console.log("Model:", Object.keys(Model).find(key => Model[key] === constantData.model));
+        console.log("Make:", constantData.make);
+        console.log("Model:", constantData.model);
         console.log("Year:", constantData.year.toString());
         console.log("Current Mileage:", mileage.toString());
 
@@ -76,6 +67,7 @@ async function main() {
             console.log(`  Record ${index + 1}:`);
             console.log(`    Mileage: ${record.mileage.toString()}`);
             console.log(`    Timestamp: ${new Date(record.timestamp * 1000).toLocaleString()}`);
+            console.log(`    Description: ${record.description}`); // Added description field
         });
 
         console.log("Ownership History:");
