@@ -34,7 +34,11 @@ class _AuthTextFieldState extends State<AuthTextField> {
   Widget build(BuildContext context) {
     return TextFormField(
       autofocus: widget.autoFocus ?? false,
-      onFieldSubmitted: (value) => widget.onSubm ?? {},
+      onFieldSubmitted: (value) {
+        if (widget.onSubm != null) {
+          widget.onSubm!(value);
+        }
+      },
       validator: (value) {
         if (value == null || value.isEmpty) {
           return "Cannot leave the fields empty";

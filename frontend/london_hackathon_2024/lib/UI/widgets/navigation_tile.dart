@@ -16,7 +16,7 @@ class NavigationTile extends StatelessWidget {
 
     return Material(
       borderRadius: BorderRadius.circular(20.0),
-      color: Colors.white,
+      color: Colors.grey[100],
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 30),

@@ -44,8 +44,10 @@ dependencies:
   google_sign_in: ^6.1.4
   web3dart: ^2.7.3
   crypto: ^3.0.3
-  
-
+  timeline_tile: ^2.0.0
+  expandable: ^5.0.1
+  flutter_scalable_ocr: ^2.0.0
+  anyline_plugin: ^52.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -13,20 +13,15 @@ class Repository {
   static late DeployedContract contract;
 
   static Future<String> init() async {
-    // Initialize Web3Client with the HTTPS endpoint
     client = Web3Client('https://rpc.api.moonbase.moonbeam.network', Client());
 
-    // Load private key
     credentials = EthPrivateKey.fromHex(privateKey);
 
-    // Load contract address
     final contractAddress = EthereumAddress.fromHex(transactionAddress);
 
-    // Load ABI from file
     final abiJson = await rootBundle.loadString('assets/car_mileage_abi.json');
     final abi = jsonDecode(abiJson);
 
-    // Create contract instance
     contract = DeployedContract(
       ContractAbi.fromJson(jsonEncode(abi), 'CarMileage'),
       contractAddress,
@@ -46,13 +41,9 @@ class Repository {
   }
 
   static Future<String> registerCar(String licensePlate, CarConstantData constantData, String initialOwner) async {
-    // Input validation
-
     try {
-      // Get the contract function
       final registerCarFunction = contract.function('registerCar');
 
-      // Prepare the transaction
       final transaction = Transaction.callContract(
         contract: contract,
         function: registerCarFunction,
@@ -66,11 +57,10 @@ class Repository {
         ],
       );
 
-      // Send the transaction
       final txHash = await client.sendTransaction(
         credentials,
         transaction,
-        chainId: 1287, // Moonbase Alpha TestNet chain ID
+        chainId: 1287,
       );
       return txHash;
     } catch (ex) {
@@ -86,8 +76,7 @@ class Repository {
       params: [licensePlateToIdBytes(licensePlate)],
     );
     print(res);
-    final int latestBlockNumber = await client.getBlockNumber();
-    print('Latest Block Number: $latestBlockNumber');
+    print(res[2][0][1].runtimeType);
     Car car = Car.fromJson(res);
     return car;
   }
@@ -96,7 +85,6 @@ class Repository {
     try {
       final updateMilage = contract.function('updateMileage');
 
-      // Prepare the transaction
       final transaction = Transaction.callContract(
         contract: contract,
         function: updateMilage,
@@ -106,16 +94,13 @@ class Repository {
           serviceHistory.description
         ],
       );
-      print("good");
-      // Send the transaction
       final txHash = await client.sendTransaction(
         credentials,
         transaction,
-        chainId: 1287, // Moonbase Alpha TestNet chain ID
+        chainId: 1287,
       );
       return txHash;
     } catch (ex) {
-      print(ex);
       return "error";
     }
   }
@@ -124,7 +109,6 @@ class Repository {
     try {
       final reportAccident = contract.function('reportAccident');
 
-      // Prepare the transaction
       final transaction = Transaction.callContract(
         contract: contract,
         function: reportAccident,
@@ -135,11 +119,10 @@ class Repository {
         ],
       );
       print("good");
-      // Send the transaction
       final txHash = await client.sendTransaction(
         credentials,
         transaction,
-        chainId: 1287, // Moonbase Alpha TestNet chain ID
+        chainId: 1287,
       );
       return txHash;
     } catch (ex) {
@@ -152,7 +135,6 @@ class Repository {
     try {
       final transferOwnership = contract.function('transferOwnership');
 
-      // Prepare the transaction
       final transaction = Transaction.callContract(
         contract: contract,
         function: transferOwnership,
@@ -161,12 +143,10 @@ class Repository {
           newOwner,
         ],
       );
-      print("good");
-      // Send the transaction
       final txHash = await client.sendTransaction(
         credentials,
         transaction,
-        chainId: 1287, // Moonbase Alpha TestNet chain ID
+        chainId: 1287,
       );
       return txHash;
     } catch (ex) {
