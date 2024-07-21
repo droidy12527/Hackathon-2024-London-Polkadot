@@ -1,6 +1,7 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lottie/lottie.dart';
 
 import '../widgets/main_button.dart';
 
@@ -35,12 +36,12 @@ class WelcomeView extends StatelessWidget {
                     AnimatedTextKit(
                       animatedTexts: [
                         TypewriterAnimatedText(
-                          'Trust The Car',
+                          'Built on Polka Dot',
                           textStyle: animatedTextStyle,
                           speed: const Duration(milliseconds: 75),
                         ),
                         TypewriterAnimatedText(
-                          'Transperency',
+                          'Car-Tracking Solution',
                           textStyle: animatedTextStyle,
                           speed: const Duration(milliseconds: 75),
                         ),
@@ -55,12 +56,10 @@ class WelcomeView extends StatelessWidget {
                       stopPauseOnTap: true,
                       onFinished: () {},
                     ),
-                    const SizedBox(
-                      height: 225,
-                    ),
                     Container(
-                      constraints: BoxConstraints(maxHeight: 275, maxWidth: 275),
+                      constraints: BoxConstraints(maxHeight: 180, maxWidth: 275),
                     ),
+                    Lottie.asset('assets/anim.json'),
                     StartButton(
                       padding: 17,
                       text: "Car Lookup",

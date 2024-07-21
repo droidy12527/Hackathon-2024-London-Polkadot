@@ -82,7 +82,7 @@ class _CarFinderViewState extends State<CarFinderView> {
                 boxBottomOff: 2.7,
                 boxRightOff: 4,
                 boxTopOff: 2.7,
-                boxHeight: MediaQuery.of(context).size.height / 5,
+                boxHeight: MediaQuery.of(context).size.height / 4,
                 getScannedText: (value) {
                   if ((value as String).trim() != "") {
                     searchLicense(value);
