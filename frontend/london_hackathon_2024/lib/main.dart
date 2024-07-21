@@ -12,9 +12,9 @@ import 'Core/Models/car_model.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await Repository.init();
 
   User? user = await FirebaseAuth.instance.authStateChanges().first;
-  await Repository.init();
   //1 ,test123
   runApp(MyApp(
     authState: user,
