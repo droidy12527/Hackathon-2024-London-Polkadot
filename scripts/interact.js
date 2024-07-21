@@ -2,10 +2,10 @@ const { ethers } = require("hardhat");
 
 async function main() {
     const [deployer] = await ethers.getSigners();
-    const carMileage = await ethers.getContractAt("CarMileage", "0xf0b89C9Abf7308FAEC9DD359Cd4aAc30287d0e9c");
+    const carMileage = await ethers.getContractAt("CarMileage", "0xC9E2bBa3240Ee228FE2e4a55a5A496B488A5B688");
 
     // Car details
-    const numberplate = "MMST12sdXY";
+    const numberplate = "test123";
     const vin = ethers.BigNumber.from("123456789"); // VIN as uint256
 
     // Use strings for make and model
@@ -17,6 +17,8 @@ async function main() {
     try {
         // Register a car if it doesn't exist
         const carId = ethers.utils.id(numberplate);
+        // console.log(carId);
+        // const carId = "ecd71870d1963316a97e3ac3408c9835ad8cf0f3c1bc703527c30265534f75ae";
         const exists = await carMileage.carExists(carId);
 
         if (!exists) {
@@ -51,9 +53,19 @@ async function main() {
         );
         console.log("Ownership transferred successfully.");
 
+        // Report an accident
+        console.log("Reporting an accident...");
+        const partsChanged = ["Front bumper", "Headlight", "Hood"];
+        await carMileage.reportAccident(
+            carId,
+            "Rear-end collision",
+            partsChanged
+        );
+        console.log("Accident reported successfully.");
+
         // Get car details
         console.log("Fetching car details...");
-        const [constantData, mileage, serviceHistory, ownershipHistory] = await carMileage.getCarDetails(carId);
+        const [constantData, mileage, serviceHistory, ownershipHistory, accidentHistory] = await carMileage.getCarDetails(carId);
 
         console.log("Car Details:");
         console.log("VIN:", constantData.vin.toString());
@@ -61,6 +73,9 @@ async function main() {
         console.log("Model:", constantData.model);
         console.log("Year:", constantData.year.toString());
         console.log("Current Mileage:", mileage.toString());
+
+        const blockNumber = await ethers.provider.getBlockNumber();
+        console.log("Current Block Number:", blockNumber);
 
         console.log("Service History:");
         serviceHistory.forEach((record, index) => {
@@ -75,6 +90,14 @@ async function main() {
             console.log(`  Owner ${index + 1}:`);
             console.log(`    Name: ${record.ownerName}`);
             console.log(`    Timestamp: ${new Date(record.timestamp * 1000).toLocaleString()}`);
+        });
+
+        console.log("Accident History:");
+        accidentHistory.forEach((record, index) => {
+            console.log(`  Accident ${index + 1}:`);
+            console.log(`    Timestamp: ${new Date(record.timestamp * 1000).toLocaleString()}`);
+            console.log(`    Description: ${record.description}`);
+            console.log(`    Parts Changed: ${record.partsChanged.join(", ")}`);
         });
 
         console.log("Test interactions completed successfully.");
