@@ -46,6 +46,7 @@ dependencies:
   crypto: ^3.0.3
   timeline_tile: ^2.0.0
   expandable: ^5.0.1
+  lottie: ^3.1.2
   flutter_scalable_ocr: ^2.0.0
   anyline_plugin: ^52.0.1
 dev_dependencies:
